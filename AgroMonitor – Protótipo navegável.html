@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AgroMonitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --verde-escuro: #2D5016;
+  --verde-medio: #3E6B22;
+  --verde-claro: #5A8F3C;
+  --verde-suave: #8DB87A;
+  --verde-bg: #EEF4E8;
+  --branco: #FAFAF7;
+  --bege: #F0EDE4;
+  --bege-escuro: #DDD8CC;
+  --texto: #1C2B0E;
+  --texto-suave: #5A6B4A;
+  --texto-leve: #8A9B7A;
+  --laranja: #D97B2A;
+  --vermelho: #C0392B;
+  --amarelo: #E8A020;
+  --azul: #2E6DA4;
+  --shadow: 0 2px 12px rgba(45,80,22,0.10);
+  --shadow-lg: 0 4px 24px rgba(45,80,22,0.15);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --branco: #1A2410;
+    --bege: #22310F;
+    --bege-escuro: #2D3D1A;
+    --texto: #E8F0DC;
+    --texto-suave: #A8C090;
+    --texto-leve: #6A8A58;
+    --verde-bg: #1E2D12;
+    --shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+}
+[data-theme="dark"] {
+  --branco: #1A2410;
+  --bege: #22310F;
+  --bege-escuro: #2D3D1A;
+  --texto: #E8F0DC;
+  --texto-suave: #A8C090;
+  --texto-leve: #6A8A58;
+  --verde-bg: #1E2D12;
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background: var(--bege);
+  color: var(--texto);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── APP SHELL ── */
+#app {
+  max-width: 430px;
+  margin: 0 auto;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bege);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--verde-escuro);
+  color: white;
+  padding: 14px 18px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding-top: calc(14px + env(safe-area-inset-top, 0px));
+}
+.topbar-logo {
+  display: flex; align-items: center; gap: 8px;
+}
+.topbar-logo svg { width: 28px; height: 28px; }
+.topbar-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+.topbar-subtitle { font-size: 11px; color: rgba(255,255,255,0.65); font-weight: 400; }
+.topbar-actions { display: flex; gap: 10px; }
+.topbar-btn {
+  background: rgba(255,255,255,0.15); border: none; border-radius: 8px;
+  color: white; padding: 6px 10px; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; gap: 5px; white-space: nowrap;
+}
+.topbar-btn:hover { background: rgba(255,255,255,0.25); }
+
+/* ── PROPERTY SELECTOR ── */
+.prop-bar {
+  background: var(--verde-medio);
+  padding: 8px 18px;
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.prop-bar select {
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+  color: white; border-radius: 8px; padding: 5px 10px; font-size: 13px;
+  font-family: 'Inter', sans-serif; font-weight: 500; cursor: pointer;
+  flex: 1;
+}
+.prop-bar select option { background: var(--verde-medio); color: white; }
+.prop-bar-label { color: rgba(255,255,255,0.7); font-size: 11px; white-space: nowrap; }
+
+/* ── SCROLL CONTENT ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 90px;
+}
+
+/* ── BOTTOM NAV ── */
+.bottomnav {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--branco);
+  border-top: 1px solid var(--bege-escuro);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -2px 12px rgba(45,80,22,0.08);
+  z-index: 100;
+}
+.nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 10px 4px 8px; cursor: pointer; border: none; background: none;
+  gap: 3px; transition: all 0.15s;
+}
+.nav-btn svg { width: 22px; height: 22px; color: var(--texto-leve); transition: color 0.15s; }
+.nav-btn span { font-size: 10px; color: var(--texto-leve); font-weight: 500; transition: color 0.15s; }
+.nav-btn.active svg { color: var(--verde-claro); }
+.nav-btn.active span { color: var(--verde-claro); font-weight: 600; }
+.nav-btn .nav-dot {
+  width: 4px; height: 4px; border-radius: 50%; background: var(--verde-claro);
+  display: none;
+}
+.nav-btn.active .nav-dot { display: block; }
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── DASHBOARD ── */
+.dash-header {
+  background: linear-gradient(160deg, var(--verde-escuro) 0%, var(--verde-claro) 100%);
+  padding: 20px 18px 28px;
+  color: white;
+}
+.dash-greeting { font-size: 13px; color: rgba(255,255,255,0.7); }
+.dash-name { font-size: 20px; font-weight: 700; margin-top: 2px; }
+.dash-prop { font-size: 13px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+.dash-date { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 6px; }
+
+.stats-row {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 10px; padding: 16px 18px 0;
+  margin-top: -18px;
+}
+.stat-card {
+  background: var(--branco); border-radius: var(--radius); padding: 14px;
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px;
+}
+.stat-icon {
+  width: 40px; height: 40px; border-radius: 10px; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.stat-icon svg { width: 20px; height: 20px; }
+.stat-icon.total { background: var(--verde-bg); color: var(--verde-medio); }
+.stat-icon.praga { background: #FFF3E0; color: #E65100; }
+.stat-icon.doenca { background: #FCE4EC; color: #C2185B; }
+.stat-icon.daninha { background: #E8F5E9; color: #2E7D32; }
+.stat-num { font-size: 22px; font-weight: 700; line-height: 1; }
+.stat-lbl { font-size: 11px; color: var(--texto-suave); margin-top: 2px; }
+
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 18px 10px;
+}
+.section-title { font-size: 15px; font-weight: 600; }
+.section-link { font-size: 12px; color: var(--verde-claro); font-weight: 500; cursor: pointer; }
+
+.chart-card {
+  margin: 0 18px 14px; background: var(--branco);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px;
+}
+.chart-title { font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+.bar-chart { display: flex; flex-direction: column; gap: 8px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-label { font-size: 12px; color: var(--texto-suave); width: 90px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 10px; background: var(--bege-escuro); border-radius: 5px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 5px; transition: width 0.6s ease; }
+.bar-val { font-size: 12px; font-weight: 600; width: 20px; text-align: right; }
+
+.mini-line { display: flex; gap: 4px; align-items: flex-end; height: 48px; }
+.mini-line-bar {
+  flex: 1; border-radius: 3px 3px 0 0;
+  background: var(--verde-suave); min-height: 4px; transition: height 0.4s;
+}
+
+.recent-list { padding: 0 18px 8px; display: flex; flex-direction: column; gap: 10px; }
+.recent-item {
+  background: var(--branco); border-radius: var(--radius); padding: 13px 14px;
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px;
+  cursor: pointer; transition: transform 0.1s;
+}
+.recent-item:active { transform: scale(0.98); }
+.recent-badge {
+  width: 36px; height: 36px; border-radius: 9px; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px;
+}
+.recent-badge.praga { background: #FFF3E0; }
+.recent-badge.doenca { background: #FCE4EC; }
+.recent-badge.daninha { background: #E8F5E9; }
+.recent-info { flex: 1; min-width: 0; }
+.recent-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.recent-sub { font-size: 11px; color: var(--texto-suave); margin-top: 1px; }
+.recent-meta { text-align: right; flex-shrink: 0; }
+.recent-date { font-size: 11px; color: var(--texto-leve); }
+.intensity-badge {
+  display: inline-block; padding: 2px 7px; border-radius: 20px;
+  font-size: 10px; font-weight: 600; margin-top: 3px;
+}
+.int-alta { background: #FFEBEE; color: #C62828; }
+.int-media { background: #FFF8E1; color: #E65100; }
+.int-baixa { background: #E8F5E9; color: #2E7D32; }
+
+.fab {
+  position: fixed; bottom: 80px; right: 18px;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--verde-medio), var(--verde-claro));
+  color: white; border: none; cursor: pointer; box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; z-index: 200; transition: transform 0.15s;
+}
+.fab:active { transform: scale(0.92); }
+
+/* ── MONITORAMENTO ── */
+.form-container { padding: 16px 18px; }
+.form-section-title {
+  font-size: 12px; font-weight: 600; color: var(--verde-medio);
+  text-transform: uppercase; letter-spacing: 0.5px; margin: 18px 0 10px;
+}
+.form-section-title:first-child { margin-top: 0; }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 13px; font-weight: 500; color: var(--texto-suave); margin-bottom: 5px; display: block; }
+.form-label .req { color: var(--vermelho); }
+.form-input, .form-select, .form-textarea {
+  width: 100%; border: 1.5px solid var(--bege-escuro);
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  font-family: 'Inter', sans-serif; font-size: 14px; color: var(--texto);
+  background: var(--branco); transition: border-color 0.15s;
+  -webkit-appearance: none; appearance: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none; border-color: var(--verde-claro);
+  box-shadow: 0 0 0 3px rgba(90,143,60,0.12);
+}
+.form-textarea { min-height: 80px; resize: vertical; }
+.form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A6B4A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+.intensity-buttons { display: flex; gap: 8px; }
+.int-btn {
+  flex: 1; padding: 10px 8px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--bege-escuro); background: var(--branco);
+  font-size: 13px; font-weight: 500; cursor: pointer; text-align: center;
+  transition: all 0.15s; color: var(--texto-suave);
+}
+.int-btn.selected-baixa { border-color: #4CAF50; background: #E8F5E9; color: #2E7D32; }
+.int-btn.selected-media { border-color: #FF9800; background: #FFF3E0; color: #E65100; }
+.int-btn.selected-alta { border-color: #F44336; background: #FFEBEE; color: #C62828; }
+
+.photo-upload-area {
+  border: 2px dashed var(--bege-escuro); border-radius: var(--radius-sm);
+  padding: 24px; text-align: center; cursor: pointer; transition: all 0.15s;
+  background: var(--branco);
+}
+.photo-upload-area:hover { border-color: var(--verde-claro); background: var(--verde-bg); }
+.photo-upload-area svg { color: var(--texto-leve); margin-bottom: 8px; }
+.photo-upload-text { font-size: 13px; color: var(--texto-suave); }
+.photo-upload-sub { font-size: 11px; color: var(--texto-leve); margin-top: 3px; }
+.photo-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.photo-thumb {
+  width: 72px; height: 72px; border-radius: 8px; object-fit: cover;
+  border: 2px solid var(--bege-escuro);
+}
+
+.submit-btn {
+  width: 100%; padding: 15px; background: linear-gradient(135deg, var(--verde-medio), var(--verde-claro));
+  color: white; border: none; border-radius: var(--radius-sm); font-size: 15px;
+  font-weight: 600; cursor: pointer; margin-top: 20px; letter-spacing: 0.2px;
+  transition: opacity 0.15s;
+}
+.submit-btn:active { opacity: 0.85; }
+
+/* ── BIBLIOTECA ── */
+.search-bar {
+  padding: 12px 18px; background: var(--branco); border-bottom: 1px solid var(--bege-escuro);
+  position: sticky; top: 0; z-index: 10;
+}
+.search-input {
+  width: 100%; border: 1.5px solid var(--bege-escuro); border-radius: 10px;
+  padding: 9px 12px 9px 36px; font-size: 14px; background: var(--bege);
+  font-family: 'Inter', sans-serif; color: var(--texto); position: relative;
+}
+.search-input:focus { outline: none; border-color: var(--verde-claro); background: var(--branco); }
+.search-wrapper { position: relative; }
+.search-wrapper svg {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; color: var(--texto-leve); pointer-events: none;
+}
+.cat-tabs {
+  display: flex; padding: 10px 18px; gap: 8px; overflow-x: auto;
+  scrollbar-width: none; background: var(--branco); border-bottom: 1px solid var(--bege-escuro);
+}
+.cat-tabs::-webkit-scrollbar { display: none; }
+.cat-tab {
+  flex-shrink: 0; padding: 6px 14px; border-radius: 20px; font-size: 13px;
+  font-weight: 500; cursor: pointer; border: 1.5px solid var(--bege-escuro);
+  background: var(--branco); color: var(--texto-suave); transition: all 0.15s;
+}
+.cat-tab.active { background: var(--verde-medio); color: white; border-color: var(--verde-medio); }
+
+.bio-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 12px; padding: 14px 18px;
+}
+.bio-card {
+  background: var(--branco); border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow); cursor: pointer; transition: transform 0.1s;
+}
+.bio-card:active { transform: scale(0.97); }
+/* Bio image container — always 4:3, any image size fills it uniformly */
+.bio-img-wrap {
+  width: 100%;
+  aspect-ratio: 4/3;
+  position: relative;
+  overflow: hidden;
+  background: var(--verde-bg);
+}
+.bio-img-wrap img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+/* shown when src is empty or image fails to load */
+.bio-img-wrap .bio-img-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 36px;
+  color: var(--texto-leve);
+  pointer-events: none;
+}
+.bio-img-wrap .bio-img-fallback span {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--texto-leve);
+}
+/* hide fallback when real image loads */
+.bio-img-wrap img.loaded ~ .bio-img-fallback { display: none; }
+
+/* modal hero image — wider, same normalisation */
+.bio-modal-img-wrap {
+  width: 100%;
+  aspect-ratio: 16/9;
+  position: relative;
+  overflow: hidden;
+  background: var(--verde-bg);
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.bio-modal-img-wrap img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+.bio-modal-img-wrap .bio-img-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 56px;
+}
+.bio-modal-img-wrap .bio-img-fallback span {
+  font-size: 12px;
+  color: var(--texto-leve);
+  font-weight: 500;
+}
+.bio-info { padding: 10px; }
+.bio-name { font-size: 13px; font-weight: 600; }
+.bio-sci { font-size: 10px; color: var(--texto-suave); font-style: italic; }
+.bio-cat { display: inline-block; margin-top: 5px; padding: 2px 7px; border-radius: 20px; font-size: 10px; font-weight: 500; }
+.bio-cat.praga { background: #FFF3E0; color: #E65100; }
+.bio-cat.doenca { background: #FCE4EC; color: #C2185B; }
+.bio-cat.daninha { background: #E8F5E9; color: #2E7D32; }
+
+/* ── HISTÓRICO ── */
+.hist-filters {
+  padding: 12px 18px; background: var(--branco);
+  border-bottom: 1px solid var(--bege-escuro);
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+}
+.hist-filters::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex-shrink: 0; padding: 5px 12px; border-radius: 20px; font-size: 12px;
+  font-weight: 500; cursor: pointer; border: 1.5px solid var(--bege-escuro);
+  background: var(--branco); color: var(--texto-suave); transition: all 0.15s;
+}
+.filter-chip.active { background: var(--verde-bg); color: var(--verde-medio); border-color: var(--verde-suave); }
+
+.hist-list { padding: 12px 18px; display: flex; flex-direction: column; gap: 10px; }
+.hist-item {
+  background: var(--branco); border-radius: var(--radius); padding: 14px;
+  box-shadow: var(--shadow); cursor: pointer; transition: transform 0.1s;
+}
+.hist-item:active { transform: scale(0.98); }
+.hist-top { display: flex; align-items: flex-start; gap: 10px; }
+.hist-emoji { font-size: 22px; flex-shrink: 0; }
+.hist-main { flex: 1; min-width: 0; }
+.hist-title { font-size: 14px; font-weight: 600; }
+.hist-culture { font-size: 12px; color: var(--texto-suave); }
+.hist-side { text-align: right; flex-shrink: 0; }
+.hist-date { font-size: 11px; color: var(--texto-leve); }
+.hist-bottom { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--bege-escuro); display: flex; justify-content: space-between; align-items: center; }
+.hist-desc { font-size: 12px; color: var(--texto-suave); flex: 1; }
+.hist-actions { display: flex; gap: 8px; }
+.hist-action-btn {
+  padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 500;
+  cursor: pointer; border: 1.5px solid var(--bege-escuro); background: var(--branco);
+  color: var(--texto-suave); transition: all 0.15s;
+}
+.hist-action-btn:hover { border-color: var(--verde-suave); color: var(--verde-medio); }
+
+/* ── PROPRIEDADES ── */
+.prop-list { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+.prop-card {
+  background: var(--branco); border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.prop-card-header {
+  background: linear-gradient(135deg, var(--verde-medio), var(--verde-claro));
+  padding: 16px; color: white;
+}
+.prop-card-name { font-size: 16px; font-weight: 700; }
+.prop-card-owner { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+.prop-card-body { padding: 14px; }
+.prop-info-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--bege-escuro); }
+.prop-info-row:last-child { border-bottom: none; }
+.prop-info-key { font-size: 12px; color: var(--texto-suave); }
+.prop-info-val { font-size: 12px; font-weight: 500; }
+.prop-cultures { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px; border-top: 1px solid var(--bege-escuro); }
+.culture-tag {
+  background: var(--verde-bg); color: var(--verde-medio); border-radius: 20px;
+  padding: 4px 10px; font-size: 12px; font-weight: 500;
+}
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 500; display: none; align-items: flex-end; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: var(--branco); border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 430px; max-height: 85dvh; overflow-y: auto;
+  padding: 0 0 calc(20px + env(safe-area-inset-bottom, 0px));
+}
+.modal-handle { width: 36px; height: 4px; background: var(--bege-escuro); border-radius: 2px; margin: 12px auto; }
+.modal-header { padding: 0 18px 14px; border-bottom: 1px solid var(--bege-escuro); }
+.modal-title { font-size: 17px; font-weight: 700; }
+.modal-sub { font-size: 12px; color: var(--texto-suave); margin-top: 3px; }
+.modal-body { padding: 16px 18px; }
+.modal-close {
+  display: block; width: calc(100% - 36px); margin: 0 18px;
+  padding: 12px; border-radius: var(--radius-sm); background: var(--bege);
+  border: 1.5px solid var(--bege-escuro); font-size: 14px; font-weight: 500;
+  color: var(--texto-suave); cursor: pointer; text-align: center;
+}
+.modal-close:hover { background: var(--bege-escuro); }
+
+.detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--bege-escuro); }
+.detail-row:last-child { border-bottom: none; }
+.detail-key { font-size: 12px; color: var(--texto-suave); }
+.detail-val { font-size: 13px; font-weight: 500; text-align: right; max-width: 60%; }
+
+.symptom-box {
+  background: var(--bege); border-radius: var(--radius-sm); padding: 12px;
+  font-size: 13px; color: var(--texto-suave); margin: 12px 0; line-height: 1.6;
+}
+.aviso-box {
+  background: #FFF8E1; border: 1px solid #FFE082; border-radius: var(--radius-sm);
+  padding: 10px 12px; font-size: 12px; color: #795548; margin-top: 12px;
+  line-height: 1.5;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--verde-escuro); color: white; padding: 10px 18px;
+  border-radius: 10px; font-size: 13px; font-weight: 500; z-index: 999;
+  opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 40px 24px; }
+.empty-state svg { color: var(--texto-leve); margin-bottom: 12px; }
+.empty-state h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.empty-state p { font-size: 13px; color: var(--texto-suave); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <svg viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="14" fill="rgba(255,255,255,0.15)"/>
+        <path d="M14 6 C10 6 7 9 7 13 C7 16.5 9.5 19.5 14 22 C18.5 19.5 21 16.5 21 13 C21 9 18 6 14 6Z" fill="rgba(255,255,255,0.9)"/>
+        <path d="M14 10 L14 18 M11 13 L14 10 L17 13" stroke="#2D5016" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <div class="topbar-title">AgroMonitor</div>
+        <div class="topbar-subtitle">Monitoramento Fitossanitário</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn" onclick="showToast('🔄 Dados sincronizados')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sincronizar
+      </button>
+    </div>
+  </div>
+
+  <!-- PROPERTY SELECTOR -->
+  <div class="prop-bar">
+    <div class="prop-bar-label">Propriedade:</div>
+    <select id="propSelector" onchange="changeProp()">
+      <option value="1">Sítio São João – Família Silva</option>
+      <option value="2">Chácara Verde Esperança – Família Oliveira</option>
+    </select>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="screen-dash" class="screen active">
+      <div class="dash-header">
+        <div class="dash-greeting">Bom dia,</div>
+        <div class="dash-name">João da Silva 🌱</div>
+        <div class="dash-prop">Sítio São João · Paranapanema – SP</div>
+        <div class="dash-date">Último monitoramento: <strong>5 nov 2026</strong> · Próximo: <strong>12 nov 2026</strong></div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon total"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div><div class="stat-num" id="stat-total">24</div><div class="stat-lbl">Registros totais</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon praga"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3"/><path d="M12 11v5M9 19h6M6 7l-3 2M18 7l3 2M4 14l-2-1M20 14l2-1"/></svg></div>
+          <div><div class="stat-num" id="stat-pragas">11</div><div class="stat-lbl">Pragas</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon doenca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+          <div><div class="stat-num" id="stat-doencas">8</div><div class="stat-lbl">Doenças</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon daninha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V12M5 10C5 7 7 4 12 4s7 3 7 6c0 4-3 7-7 8C8 17 5 14 5 10z"/></svg></div>
+          <div><div class="stat-num" id="stat-daninha">5</div><div class="stat-lbl">Daninhas</div></div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Ocorrências por problema</div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Mais registrados</div>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <div class="bar-label">Pulgão</div>
+            <div class="bar-track"><div class="bar-fill" style="width:85%;background:#FF8F00;"></div></div>
+            <div class="bar-val">5</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Mosca-branca</div>
+            <div class="bar-track"><div class="bar-fill" style="width:68%;background:#FF8F00;"></div></div>
+            <div class="bar-val">4</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Míldio</div>
+            <div class="bar-track"><div class="bar-fill" style="width:50%;background:#C2185B;"></div></div>
+            <div class="bar-val">3</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Tiririca</div>
+            <div class="bar-track"><div class="bar-fill" style="width:34%;background:#2E7D32;"></div></div>
+            <div class="bar-val">2</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Botrytis</div>
+            <div class="bar-track"><div class="bar-fill" style="width:34%;background:#C2185B;"></div></div>
+            <div class="bar-val">2</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Registros nos últimos 8 semanas</div>
+        <div class="mini-line" id="miniLine"></div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Registros recentes</div>
+        <div class="section-link" onclick="switchScreen('hist')">Ver todos</div>
+      </div>
+      <div class="recent-list">
+        <div class="recent-item" onclick="openOccurrence(0)">
+          <div class="recent-badge praga">🦟</div>
+          <div class="recent-info"><div class="recent-name">Mosca-branca</div><div class="recent-sub">Alface · Canteiro 3</div></div>
+          <div class="recent-meta"><div class="recent-date">05 nov</div><span class="intensity-badge int-alta">Alta</span></div>
+        </div>
+        <div class="recent-item" onclick="openOccurrence(1)">
+          <div class="recent-badge doenca">🍂</div>
+          <div class="recent-info"><div class="recent-name">Míldio</div><div class="recent-sub">Alface · Canteiro 1</div></div>
+          <div class="recent-meta"><div class="recent-date">03 nov</div><span class="intensity-badge int-media">Média</span></div>
+        </div>
+        <div class="recent-item" onclick="openOccurrence(2)">
+          <div class="recent-badge praga">🐛</div>
+          <div class="recent-info"><div class="recent-name">Pulgão</div><div class="recent-sub">Couve · Canteiro 2</div></div>
+          <div class="recent-meta"><div class="recent-date">30 out</div><span class="intensity-badge int-baixa">Baixa</span></div>
+        </div>
+        <div class="recent-item" onclick="openOccurrence(3)">
+          <div class="recent-badge daninha">🌿</div>
+          <div class="recent-info"><div class="recent-name">Tiririca</div><div class="recent-sub">Tomate · Área Geral</div></div>
+          <div class="recent-meta"><div class="recent-date">28 out</div><span class="intensity-badge int-media">Média</span></div>
+        </div>
+      </div>
+
+      <div style="height:16px;"></div>
+      <button class="fab" onclick="switchScreen('monitor')" title="Nova ocorrência">＋</button>
+    </div>
+
+    <!-- MONITORAMENTO -->
+    <div id="screen-monitor" class="screen">
+      <div style="background:var(--verde-medio);padding:14px 18px;color:white;">
+        <div style="font-size:16px;font-weight:700;">Registrar Ocorrência</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:2px;">Sítio São João</div>
+      </div>
+      <div class="form-container">
+        <div class="form-section-title">📍 Local</div>
+        <div class="form-group">
+          <label class="form-label">Cultura <span class="req">*</span></label>
+          <select class="form-select">
+            <option value="">Selecione a cultura</option>
+            <option>Alface</option><option>Couve</option><option>Tomate</option>
+            <option>Rúcula</option><option>Espinafre</option><option>Brócolis</option>
+            <option>Cenoura</option><option>Beterraba</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Área / Canteiro</label>
+          <input class="form-input" type="text" placeholder="ex.: Canteiro 2, Estufa A…">
+        </div>
+
+        <div class="form-section-title">🔍 Problema observado</div>
+        <div class="form-group">
+          <label class="form-label">Categoria <span class="req">*</span></label>
+          <select class="form-select" id="catSelect" onchange="updateCatInput()">
+            <option value="">Selecione</option>
+            <option value="praga">🦟 Praga</option>
+            <option value="doenca">🍂 Doença</option>
+            <option value="daninha">🌿 Planta daninha</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nome do problema <span class="req">*</span></label>
+          <select class="form-select" id="problemaSelect">
+            <option value="">Selecione a categoria acima</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data da observação <span class="req">*</span></label>
+          <input class="form-input" type="date" id="dataObs" value="2026-11-11">
+        </div>
+
+        <div class="form-section-title">📊 Intensidade</div>
+        <div class="form-group">
+          <div class="intensity-buttons">
+            <button class="int-btn" onclick="selectInt(this,'baixa')">🟢 Baixa</button>
+            <button class="int-btn" onclick="selectInt(this,'media')">🟡 Média</button>
+            <button class="int-btn" onclick="selectInt(this,'alta')">🔴 Alta</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantidade observada (opcional)</label>
+          <input class="form-input" type="number" placeholder="ex.: 15 insetos">
+        </div>
+
+        <div class="form-section-title">📝 Descrição</div>
+        <div class="form-group">
+          <label class="form-label">Sintomas ou danos observados</label>
+          <textarea class="form-textarea" placeholder="Descreva o que você viu: manchas, insetos, folhas danificadas…"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Medida de manejo adotada (se houver)</label>
+          <textarea class="form-textarea" placeholder="ex.: Remoção manual, aplicação de calda…"></textarea>
+        </div>
+
+        <div class="form-section-title">📷 Fotografia</div>
+        <div class="photo-upload-area" onclick="showToast('📷 Câmera disponível no dispositivo')">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <div class="photo-upload-text">Tirar foto ou escolher da galeria</div>
+          <div class="photo-upload-sub">Recomendado: fotografia do problema na lavoura</div>
+        </div>
+
+        <div style="background:#E8F5E9;border:1px solid #A5D6A7;border-radius:var(--radius-sm);padding:10px 12px;margin-top:14px;font-size:12px;color:#2E7D32;line-height:1.5;">
+          💡 <strong>Sem internet?</strong> Este registro será salvo no aparelho e enviado automaticamente quando a conexão retornar.
+        </div>
+
+        <button class="submit-btn" onclick="saveRecord()">✅ Salvar registro</button>
+      </div>
+    </div>
+
+    <!-- BIBLIOTECA -->
+    <div id="screen-bio" class="screen">
+      <div class="search-bar">
+        <div class="search-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input class="search-input" type="text" placeholder="Buscar praga, doença ou planta…" id="bioSearch" oninput="filterBio()">
+        </div>
+      </div>
+      <div class="cat-tabs">
+        <button class="cat-tab active" onclick="filterBioTab(this,'all')">Todos</button>
+        <button class="cat-tab" onclick="filterBioTab(this,'praga')">🦟 Pragas</button>
+        <button class="cat-tab" onclick="filterBioTab(this,'doenca')">🍂 Doenças</button>
+        <button class="cat-tab" onclick="filterBioTab(this,'daninha')">🌿 Daninhas</button>
+      </div>
+      <div class="aviso-box" style="margin:10px 18px 0;">
+        ⚠️ Esta biblioteca serve para <strong>comparação visual</strong>. A identificação visual não substitui avaliação técnica. Em caso de dúvida, consulte um engenheiro agrônomo.
+      </div>
+      <div class="bio-grid" id="bioGrid"></div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div id="screen-hist" class="screen">
+      <div style="background:var(--verde-medio);padding:12px 18px;color:white;">
+        <div style="font-size:16px;font-weight:700;">Histórico de Monitoramento</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.75);">24 registros · Sítio São João</div>
+      </div>
+      <div class="hist-filters">
+        <button class="filter-chip active" onclick="filterHist(this,'all')">Todos</button>
+        <button class="filter-chip" onclick="filterHist(this,'praga')">Pragas</button>
+        <button class="filter-chip" onclick="filterHist(this,'doenca')">Doenças</button>
+        <button class="filter-chip" onclick="filterHist(this,'daninha')">Daninhas</button>
+        <button class="filter-chip" onclick="filterHist(this,'alface')">Alface</button>
+        <button class="filter-chip" onclick="filterHist(this,'couve')">Couve</button>
+        <button class="filter-chip" onclick="filterHist(this,'tomate')">Tomate</button>
+      </div>
+      <div class="hist-list" id="histList"></div>
+    </div>
+
+    <!-- PROPRIEDADES -->
+    <div id="screen-prop" class="screen">
+      <div style="background:var(--verde-medio);padding:14px 18px;color:white;">
+        <div style="font-size:16px;font-weight:700;">Propriedades</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.75);">Projeto UFSCar · Paranapanema – SP</div>
+      </div>
+      <div class="prop-list">
+        <div class="prop-card">
+          <div class="prop-card-header">
+            <div class="prop-card-name">Sítio São João</div>
+            <div class="prop-card-owner">👤 João da Silva (responsável)</div>
+          </div>
+          <div class="prop-card-body">
+            <div class="prop-info-row"><span class="prop-info-key">Município</span><span class="prop-info-val">Paranapanema – SP</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Área total</span><span class="prop-info-val">4,2 ha</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Área produtiva</span><span class="prop-info-val">1,8 ha</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Tipo de cultivo</span><span class="prop-info-val">Campo aberto + estufa</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Irrigação</span><span class="prop-info-val">Gotejamento</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Registros</span><span class="prop-info-val">24 ocorrências</span></div>
+          </div>
+          <div class="prop-cultures">
+            <span class="culture-tag">Alface</span><span class="culture-tag">Couve</span>
+            <span class="culture-tag">Tomate</span><span class="culture-tag">Rúcula</span>
+            <span class="culture-tag">Brócolis</span>
+          </div>
+        </div>
+        <div class="prop-card">
+          <div class="prop-card-header">
+            <div class="prop-card-name">Chácara Verde Esperança</div>
+            <div class="prop-card-owner">👤 Maria Oliveira (responsável)</div>
+          </div>
+          <div class="prop-card-body">
+            <div class="prop-info-row"><span class="prop-info-key">Município</span><span class="prop-info-val">Paranapanema – SP</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Área total</span><span class="prop-info-val">3,5 ha</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Área produtiva</span><span class="prop-info-val">1,4 ha</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Tipo de cultivo</span><span class="prop-info-val">Campo aberto</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Irrigação</span><span class="prop-info-val">Aspersão</span></div>
+            <div class="prop-info-row"><span class="prop-info-key">Registros</span><span class="prop-info-val">18 ocorrências</span></div>
+          </div>
+          <div class="prop-cultures">
+            <span class="culture-tag">Tomate</span><span class="culture-tag">Pimentão</span>
+            <span class="culture-tag">Cenoura</span><span class="culture-tag">Beterraba</span>
+          </div>
+        </div>
+        <div style="background:var(--branco);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;text-align:center;cursor:pointer;" onclick="showToast('+ Adicionar propriedade em breve')">
+          <div style="font-size:28px;margin-bottom:6px;">＋</div>
+          <div style="font-size:14px;font-weight:600;color:var(--verde-medio);">Adicionar propriedade</div>
+          <div style="font-size:12px;color:var(--texto-suave);margin-top:3px;">Cadastrar nova propriedade rural</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottomnav">
+    <button class="nav-btn active" id="nav-dash" onclick="switchScreen('dash')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <div class="nav-dot"></div>
+      <span>Início</span>
+    </button>
+    <button class="nav-btn" id="nav-monitor" onclick="switchScreen('monitor')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <div class="nav-dot"></div>
+      <span>Registrar</span>
+    </button>
+    <button class="nav-btn" id="nav-bio" onclick="switchScreen('bio')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6 2 2 7 2 12s4 10 10 10 10-4.5 10-10S18 2 12 2z"/><path d="M12 7v5l3 3"/></svg>
+      <div class="nav-dot"></div>
+      <span>Biblioteca</span>
+    </button>
+    <button class="nav-btn" id="nav-hist" onclick="switchScreen('hist')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      <div class="nav-dot"></div>
+      <span>Histórico</span>
+    </button>
+    <button class="nav-btn" id="nav-prop" onclick="switchScreen('prop')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <div class="nav-dot"></div>
+      <span>Propriedades</span>
+    </button>
+  </nav>
+</div>
+
+<!-- MODAL: Detalhe Ocorrência -->
+<div class="modal-overlay" id="occModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="occTitle">Mosca-branca</div>
+      <div class="modal-sub" id="occSub">Praga · Alface · 05 nov 2026</div>
+    </div>
+    <div class="modal-body" id="occBody"></div>
+    <button class="modal-close" onclick="closeModal('occModal')">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL: Detalhe Biblioteca -->
+<div class="modal-overlay" id="bioModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="bioTitle"></div>
+      <div class="modal-sub" id="bioSub"></div>
+    </div>
+    <div class="modal-body" id="bioBody"></div>
+    <button class="modal-close" onclick="closeModal('bioModal')">Fechar</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──
+const occurrences = [
+  { id:0, emoji:'🦟', cat:'praga', name:'Mosca-branca', culture:'Alface', area:'Canteiro 3', date:'05/11/2026', intensity:'Alta', qty:'~30 adultos', desc:'Colônias na face inferior das folhas. Folhas amarelando e com fumagina.', manejo:'Instalação de armadilhas amarelas adesivas.', prop:'Sítio São João' },
+  { id:1, emoji:'🍂', cat:'doenca', name:'Míldio', culture:'Alface', area:'Canteiro 1', date:'03/11/2026', intensity:'Média', qty:'—', desc:'Manchas amareladas na face superior e esporulação cinza-violácea na face inferior.', manejo:'Redução da frequência de irrigação. Remoção de folhas afetadas.', prop:'Sítio São João' },
+  { id:2, emoji:'🐛', cat:'praga', name:'Pulgão', culture:'Couve', area:'Canteiro 2', date:'30/10/2026', intensity:'Baixa', qty:'~15 colônias', desc:'Insetos pequenos de cor verde-escura agrupados nas nervuras.', manejo:'Monitoramento continuado. Sem intervenção por enquanto.', prop:'Sítio São João' },
+  { id:3, emoji:'🌿', cat:'daninha', name:'Tiririca', culture:'Tomate', area:'Área Geral', date:'28/10/2026', intensity:'Média', qty:'Alta densidade', desc:'Infestação por tiririca na entre linha da cultura do tomate.', manejo:'Capina manual. Será necessária nova avaliação.', prop:'Sítio São João' },
+  { id:4, emoji:'🦟', cat:'praga', name:'Pulgão', culture:'Rúcula', area:'Canteiro 4', date:'24/10/2026', intensity:'Alta', qty:'Muito elevada', desc:'Colônias densas de pulgão cobrindo grande parte das plantas.', manejo:'Aplicação de calda de fumo (alternativa orgânica).', prop:'Sítio São João' },
+  { id:5, emoji:'🍂', cat:'doenca', name:'Botrytis', culture:'Alface', area:'Estufa', date:'20/10/2026', intensity:'Média', qty:'—', desc:'Lesões aquosas e mofo cinzento nas folhas mais velhas.', manejo:'Melhoria da ventilação da estufa. Remoção das folhas afetadas.', prop:'Sítio São João' },
+  { id:6, emoji:'🦟', cat:'praga', name:'Tripes', culture:'Tomate', area:'Canteiro 5', date:'15/10/2026', intensity:'Baixa', qty:'~5 por folha', desc:'Folhas com aparência prateada e pequenas estrias. Poucas plantas afetadas.', manejo:'Monitoramento continuado.', prop:'Sítio São João' },
+];
+
+const bioData = [
+  { emoji:'🦟', img:'imagens/moscabranca.png', cat:'praga', name:'Mosca-branca', sci:'Bemisia tabaci', cultures:'Alface, Tomate, Couve', desc:'Inseto pequeno, branco, que vive na face inferior das folhas. Causa amarelecimento e fumagina.', chars:'Adultos brancos, 1–1,5 mm. Larvas translúcidas na face inferior.', damage:'Sucção de seiva, transmissão de vírus, deposição de excrementos que favorecem fumagina.' },
+  { emoji:'🐛', img:'imagens/pulgao.png', cat:'praga', name:'Pulgão', sci:'Myzus persicae', cultures:'Couve, Rúcula, Alface, Tomate', desc:'Colônias de insetos pequenos nas folhas e hastes. Podem ser verdes, pretos ou marrons.', chars:'Corpo oval, 1–3 mm, geralmente em colônias. Produzem exsudato açucarado.', damage:'Sucção de seiva, deformação de folhas, transmissão de vírus, fumagina.' },
+  { emoji:'🦋', img:'imagens/traca.png', cat:'praga', name:'Traça-do-tomateiro', sci:'Tuta absoluta', cultures:'Tomate', desc:'Larvas que minam as folhas e perfuram frutos do tomateiro.', chars:'Adulto: mariposa cinza-acastanhada. Larva: esverdeada com faixa rosa no dorso.', damage:'Minas nas folhas, perfuração de frutos, podendo destruir toda a planta.' },
+  { emoji:'🪲', img:'imagens/VAQUINHA.png', cat:'praga', name:'Vaquinha', sci:'Diabrotica speciosa', cultures:'Tomate, Feijão, Milho', desc:'Besourinho verde com manchas amarelas. Adultos comem folhas e larvas atacam raízes.', chars:'Adulto: 5–6 mm, verde com 6 manchas amarelas. Larva: branca, vermiforme.', damage:'Desfolha, buracos nas folhas, danos às raízes e tubérculos.' },
+  { emoji:'🕷', img:'imagens/acaro.png', cat:'praga', name:'Ácaro-rajado', sci:'Tetranychus urticae', cultures:'Tomate, Feijão, Morango', desc:'Ácaro minúsculo que causa manchas bronzeadas nas folhas.', chars:'Muito pequeno (0,5 mm), verde-amarelado com manchas laterais escuras. Teia fina visível.', damage:'Manchas prateadas/bronzeadas, bronzeamento, queda de folhas em infestações severas.' },
+  { emoji:'🍂', img:'imagens/MIDIO.png', cat:'doenca', name:'Míldio', sci:'Bremia lactucae', cultures:'Alface', desc:'Doença fúngica que causa manchas amarelas na face superior e esporulação branca/cinza embaixo.', chars:'Manchas amarelas angulares na face superior, esporulação cinza-violácea na inferior.', damage:'Necrose progressiva das folhas, depreciação comercial do produto.' },
+  { emoji:'🍄', img:'imagens/botry.png', cat:'doenca', name:'Botrytis', sci:'Botrytis cinerea', cultures:'Alface, Tomate, Morango', desc:'Mofo cinzento que ataca folhas, hastes e frutos em condições de alta umidade.', chars:'Lesões aquosas que evoluem para mofo cinzento pulverulento.', damage:'Podridão de folhas, hastes e frutos. Grave em ambientes protegidos.' },
+  { emoji:'🔴', img:'imagens/requeima.png', cat:'doenca', name:'Requeima', sci:'Phytophthora infestans', cultures:'Tomate, Batata', desc:'Doença grave que destrói folhas, hastes e frutos rapidamente em condições chuvosas.', chars:'Lesões aquosas que escurecem rapidamente. Halo amarelo ao redor. Lesão branca na face inferior.', damage:'Pode destruir a lavoura em poucos dias. Uma das mais destrutivas do tomate.' },
+  { emoji:'🌿', img:'imagens/tiririca.png', cat:'daninha', name:'Tiririca', sci:'Cyperus rotundus', cultures:'Todas as hortaliças', desc:'Planta daninha de difícil controle com bulbos subterrâneos. Folhas triangulares.', chars:'Folhas triangulares e brilhantes, 20–50 cm. Inflorescência castanho-avermelhada.', damage:'Compete por água, luz e nutrientes. Alelopática. Muito difícil de erradicar.' },
+  { emoji:'🌱', img:'imagens/caruru.png', cat:'daninha', name:'Caruru', sci:'Amaranthus viridis', cultures:'Tomate, Feijão, Milho', desc:'Planta daninha de crescimento rápido com folhas ovais e talos avermelhados.', chars:'Folhas ovais, verde-escuras. Caule avermelhado. Inflorescência terminal espigada.', damage:'Competição por nutrientes e luz. Alta produção de sementes (100.000/planta).' },
+  { emoji:'🌾', img:'imagens/capim.png', cat:'daninha', name:'Capim-colchão', sci:'Digitaria horizontalis', cultures:'Hortaliças em geral', desc:'Capim rasteiro comum em hortas, com folhas lanceoladas e inflorescência em leque.', chars:'Folhas planas, pubescentes. Caule rasteiro que enraíza nos nós. Inflorescência digitada.', damage:'Competição por água e nutrientes. Hospedeiro de algumas pragas.' },
+  { emoji:'🌼', img:'imagens/picao.png', cat:'daninha', name:'Picão-preto', sci:'Bidens pilosa', cultures:'Hortaliças em geral', desc:'Planta daninha com flores amarelas e sementes que se aderem à roupa e equipamentos.', chars:'Folhas compostas serrilhadas. Flor amarela. Sementes em forma de agulhas com cerdas.', damage:'Competição intensa. Dispersão fácil de sementes que aderem a animais e roupas.' },
+];
+
+// ── NAVIGATION ──
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  document.querySelector('.content').scrollTop = 0;
+}
+
+// ── PROPERTY CHANGE ──
+function changeProp() {
+  const v = document.getElementById('propSelector').value;
+  const names = { '1': 'João da Silva', '2': 'Maria Oliveira' };
+  const props = { '1': 'Sítio São João', '2': 'Chácara Verde Esperança' };
+  document.querySelector('.dash-name').textContent = names[v] + ' 🌱';
+  document.querySelector('.dash-prop').textContent = props[v] + ' · Paranapanema – SP';
+  showToast('Propriedade alterada: ' + props[v]);
+}
+
+// ── MINI LINE CHART ──
+(function buildMiniLine() {
+  const vals = [2,3,1,4,3,5,2,4];
+  const max = Math.max(...vals);
+  const el = document.getElementById('miniLine');
+  vals.forEach((v,i) => {
+    const bar = document.createElement('div');
+    bar.className = 'mini-line-bar';
+    bar.style.height = (v / max * 100) + '%';
+    bar.title = 'Sem ' + (i+1) + ': ' + v + ' registros';
+    bar.style.background = i === vals.length-1 ? 'var(--verde-medio)' : 'var(--verde-suave)';
+    el.appendChild(bar);
+  });
+})();
+
+// ── OCCURRENCE MODAL ──
+function openOccurrence(idx) {
+  const o = occurrences[idx];
+  document.getElementById('occTitle').textContent = o.emoji + ' ' + o.name;
+  document.getElementById('occSub').textContent = (o.cat === 'praga' ? 'Praga' : o.cat === 'doenca' ? 'Doença' : 'Planta daninha') + ' · ' + o.culture + ' · ' + o.date;
+  const cls = { alta:'int-alta', media:'int-media', baixa:'int-baixa' }[o.intensity.toLowerCase()];
+  document.getElementById('occBody').innerHTML = `
+    <div class="detail-row"><span class="detail-key">Propriedade</span><span class="detail-val">${o.prop}</span></div>
+    <div class="detail-row"><span class="detail-key">Cultura</span><span class="detail-val">${o.culture}</span></div>
+    <div class="detail-row"><span class="detail-key">Área</span><span class="detail-val">${o.area}</span></div>
+    <div class="detail-row"><span class="detail-key">Data</span><span class="detail-val">${o.date}</span></div>
+    <div class="detail-row"><span class="detail-key">Intensidade</span><span class="detail-val"><span class="intensity-badge ${cls}">${o.intensity}</span></span></div>
+    <div class="detail-row"><span class="detail-key">Quantidade</span><span class="detail-val">${o.qty}</span></div>
+    <div class="detail-row" style="border-bottom:none;flex-direction:column;gap:6px;">
+      <span class="detail-key">Sintomas / danos</span>
+      <div class="symptom-box">${o.desc}</div>
+    </div>
+    <div class="detail-row" style="border-bottom:none;flex-direction:column;gap:6px;">
+      <span class="detail-key">Manejo adotado</span>
+      <div class="symptom-box">${o.manejo}</div>
+    </div>
+  `;
+  document.getElementById('occModal').classList.add('open');
+}
+
+// ── BIO GRID ──
+let bioFilter = 'all';
+let bioSearch = '';
+function renderBio() {
+  const grid = document.getElementById('bioGrid');
+  const filtered = bioData.filter(b => {
+    const matchCat = bioFilter === 'all' || b.cat === bioFilter;
+    const matchSearch = !bioSearch || b.name.toLowerCase().includes(bioSearch) || b.sci.toLowerCase().includes(bioSearch);
+    return matchCat && matchSearch;
+  });
+  grid.innerHTML = filtered.map((b) => {
+    const idx = bioData.indexOf(b);
+    const imgTag = b.img
+      ? `<img src="${b.img}" alt="${b.name}" onload="this.classList.add('loaded')" onerror="this.style.display='none'">`
+      : '';
+    return `
+      <div class="bio-card" onclick="openBio(${idx})">
+        <div class="bio-img-wrap">
+          ${imgTag}
+          <div class="bio-img-fallback">${b.emoji}<span>Sem imagem</span></div>
+        </div>
+        <div class="bio-info">
+          <div class="bio-name">${b.name}</div>
+          <div class="bio-sci">${b.sci}</div>
+          <span class="bio-cat ${b.cat}">${b.cat === 'praga' ? 'Praga' : b.cat === 'doenca' ? 'Doença' : 'Daninha'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+function filterBioTab(el, cat) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  bioFilter = cat;
+  renderBio();
+}
+function filterBio() {
+  bioSearch = document.getElementById('bioSearch').value.toLowerCase();
+  renderBio();
+}
+function openBio(idx) {
+  const b = bioData[idx];
+  document.getElementById('bioTitle').textContent = b.emoji + ' ' + b.name;
+  document.getElementById('bioSub').textContent = b.sci + ' · ' + (b.cat === 'praga' ? 'Praga' : b.cat === 'doenca' ? 'Doença' : 'Planta daninha');
+  const modalImg = b.img
+    ? `<img src="${b.img}" alt="${b.name}" onload="this.classList.add('loaded')" onerror="this.style.display='none'">`
+    : '';
+  document.getElementById('bioBody').innerHTML = `
+    <div class="bio-modal-img-wrap">
+      ${modalImg}
+      <div class="bio-img-fallback">${b.emoji}<span>Sem imagem</span></div>
+    </div>
+    <div class="detail-row"><span class="detail-key">Nome científico</span><span class="detail-val" style="font-style:italic;">${b.sci}</span></div>
+    <div class="detail-row"><span class="detail-key">Culturas afetadas</span><span class="detail-val">${b.cultures}</span></div>
+    <div class="detail-row" style="border-bottom:none;flex-direction:column;gap:6px;"><span class="detail-key">Características visuais</span><div class="symptom-box">${b.chars}</div></div>
+    <div class="detail-row" style="border-bottom:none;flex-direction:column;gap:6px;"><span class="detail-key">Danos observados</span><div class="symptom-box">${b.damage}</div></div>
+    <div class="aviso-box">⚠️ Esta ficha serve para <strong>comparação visual</strong> apenas. A confirmação diagnóstica deve ser feita por engenheiro agrônomo.</div>
+  `;
+  document.getElementById('bioModal').classList.add('open');
+}
+renderBio();
+
+// ── HISTORICAL LIST ──
+let histFilter = 'all';
+function renderHist() {
+  const list = document.getElementById('histList');
+  const filtered = occurrences.filter(o => {
+    if (histFilter === 'all') return true;
+    if (['praga','doenca','daninha'].includes(histFilter)) return o.cat === histFilter;
+    return o.culture.toLowerCase() === histFilter;
+  });
+  list.innerHTML = filtered.map(o => {
+    const cls = { alta:'int-alta', media:'int-media', baixa:'int-baixa' }[o.intensity.toLowerCase()];
+    return `
+      <div class="hist-item" onclick="openOccurrence(${o.id})">
+        <div class="hist-top">
+          <div class="hist-emoji">${o.emoji}</div>
+          <div class="hist-main">
+            <div class="hist-title">${o.name}</div>
+            <div class="hist-culture">${o.culture} · ${o.area}</div>
+          </div>
+          <div class="hist-side">
+            <div class="hist-date">${o.date}</div>
+            <span class="intensity-badge ${cls}">${o.intensity}</span>
+          </div>
+        </div>
+        <div class="hist-bottom">
+          <div class="hist-desc">${o.desc.substring(0,60)}…</div>
+          <div class="hist-actions">
+            <button class="hist-action-btn" onclick="event.stopPropagation();showToast('✏️ Editando…')">Editar</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('') || '<div class="empty-state"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><h3>Nenhum registro</h3><p>Sem ocorrências para este filtro.</p></div>';
+}
+function filterHist(el, f) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  histFilter = f;
+  renderHist();
+}
+renderHist();
+
+// ── FORM ──
+const problemaOpts = {
+  praga: ['Mosca-branca','Pulgão','Traça-do-tomateiro','Vaquinha','Tripes','Ácaro-rajado','Broca-pequena','Lagarta-do-cartucho','Outro'],
+  doenca: ['Míldio','Botrytis','Requeima','Mancha-bacteriana','Crestamento-bacteriano','Antracnose','Oídio','Outro'],
+  daninha: ['Tiririca','Caruru','Capim-colchão','Picão-preto','Capim-colonião','Fedegoso','Outro'],
+};
+function updateCatInput() {
+  const cat = document.getElementById('catSelect').value;
+  const sel = document.getElementById('problemaSelect');
+  if (!cat) { sel.innerHTML = '<option>Selecione a categoria acima</option>'; return; }
+  sel.innerHTML = '<option value="">Selecione o problema</option>' + (problemaOpts[cat] || []).map(p => `<option>${p}</option>`).join('');
+}
+function selectInt(btn, v) {
+  document.querySelectorAll('.int-btn').forEach(b => b.className = 'int-btn');
+  btn.classList.add('selected-' + v);
+}
+function saveRecord() {
+  showToast('✅ Registro salvo com sucesso!');
+  setTimeout(() => switchScreen('hist'), 1200);
+}
+
+// ── MODAL ──
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>
